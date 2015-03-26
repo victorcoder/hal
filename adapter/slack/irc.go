@@ -68,3 +68,15 @@ func (a *adapter) sendIRC(res *hal.Response, strings ...string) error {
 
 	return nil
 }
+
+type slackPayload struct {
+	Channel     string                   `json:"channel,omitempty"`
+	Username    string                   `json:"username,omitempty"`
+	Text        string                   `json:"text,omitempty"`
+	IconEmoji   string                   `json:"icon_emoji,omitempty"`
+	IconURL     string                   `json:"icon_url,omitempty"`
+	UnfurlLinks bool                     `json:"unfurl_links,omitempty"`
+	Fallback    string                   `json:"fallback,omitempty"`
+	Color       string                   `json:"color,omitempty"`
+	Fields      []map[string]interface{} `json:"fields,omitempty"`
+}
