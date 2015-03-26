@@ -17,7 +17,6 @@ func (a *adapter) startConnection() {
 		hal.Logger.Debugf("%s\n", err)
 	}
 
-	hal.Logger.Debugf("Stored users: %s\n", a.Robot.Users.All())
 	for _, user := range users {
 		// retrieve the name and mention name of our bot from the server
 		// if user.Id == api.Id {
@@ -34,9 +33,9 @@ func (a *adapter) startConnection() {
 		// If a user doesn't exist, set it.
 		u, err := a.Robot.Users.Get(user.Id)
 		if err != nil {
-			// hal.Logger.Debugf("Stored: %s %s\n", user.Name, user.Id)
 			a.Robot.Users.Set(user.Id, newUser)
 		}
+
 		// If the user doesn't match completely (say, if someone changes their name),
 		// then adjust what we have stored.
 		if u.Name != user.Name {
