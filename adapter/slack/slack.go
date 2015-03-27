@@ -94,14 +94,12 @@ func (a *adapter) Send(res *hal.Response, strings ...string) error {
 
 // Reply sends a direct response
 func (a *adapter) Reply(res *hal.Response, strings ...string) error {
-	newStrings := make([]string, len(strings))
+	newStrings := make([]string, 0)
 	for _, str := range strings {
 		newStrings = append(newStrings, fmt.Sprintf("%s: %s", res.UserName(), str))
 	}
 
-	a.Send(res, newStrings...)
-
-	return nil
+	return a.Send(res, newStrings...)
 }
 
 // Emote is not implemented.
