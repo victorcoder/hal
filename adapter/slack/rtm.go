@@ -69,6 +69,14 @@ func (a *adapter) startConnection() {
 			case slack.LatencyReport:
 				m := msg.Data.(slack.LatencyReport)
 				hal.Logger.Debugf("Current latency: %v\n", m.Value)
+			case slack.TeamJoinEvent:
+				m := msg.Data.(slack.TeamJoinEvent)
+				hal.Logger.Debugf("New member joined the team: %v\n", m.User)
+				// Add the new member to the user list
+				if _, err := a.Robot.Users.Get(m.User.Id); err != nil {
+					a.Robot.Users.Set(m.User.Id, hal.User{ID: m.User.Id, Name: m.User.Name})
+				}
+
 			default:
 				hal.Logger.Debugf("Unexpected: %v\n", msg.Data)
 			}
