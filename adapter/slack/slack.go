@@ -31,7 +31,7 @@ type adapter struct {
 	ircPassword    string
 	ircConnection  *irc.Connection
 	linkNames      int
-	wsAPI          *slack.SlackWS
+	rtm            *slack.RTM
 }
 
 type config struct {
@@ -84,8 +84,8 @@ func (a *adapter) Send(res *hal.Response, strings ...string) error {
 
 	} else {
 		for _, str := range strings {
-			out := a.wsAPI.NewOutgoingMessage(str, res.Message.Room)
-			a.wsAPI.SendMessage(out)
+			out := a.rtm.NewOutgoingMessage(str, res.Message.Room)
+			a.rtm.SendMessage(out)
 		}
 	}
 

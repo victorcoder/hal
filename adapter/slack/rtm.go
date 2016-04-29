@@ -1,14 +1,11 @@
 package slack
 
 import (
-	"time"
-
 	"github.com/danryan/hal"
 	"github.com/nlopes/slack"
 )
 
 func (a *adapter) startConnection() {
-	chReceiver := make(chan slack.SlackEvent)
 	api := slack.New(a.token)
 	// api.SetDebug(true)
 
@@ -26,34 +23,30 @@ func (a *adapter) startConnection() {
 		// }
 		// Initialize a newUser object in case we need it.
 		newUser := hal.User{
-			ID:   user.Id,
+			ID:   user.ID,
 			Name: user.Name,
 		}
 		// Prepopulate our users map because we can easily do so.
 		// If a user doesn't exist, set it.
-		u, err := a.Robot.Users.Get(user.Id)
+		u, err := a.Robot.Users.Get(user.ID)
 		if err != nil {
-			a.Robot.Users.Set(user.Id, newUser)
+			a.Robot.Users.Set(user.ID, newUser)
 		}
 
 		// If the user doesn't match completely (say, if someone changes their name),
 		// then adjust what we have stored.
 		if u.Name != user.Name {
-			a.Robot.Users.Set(user.Id, newUser)
+			a.Robot.Users.Set(user.ID, newUser)
 		}
 	}
 	hal.Logger.Debugf("Stored users: %s\n", a.Robot.Users.All())
 
-	a.wsAPI, err = api.StartRTM("", "http://"+a.team+".slack.com")
-	if err != nil {
-		hal.Logger.Debugf("%s\n", err)
-	}
+	rtm := api.NewRTM()
+	go rtm.ManageConnection()
 
-	go a.wsAPI.HandleIncomingEvents(chReceiver)
-	go a.wsAPI.Keepalive(20 * time.Second)
 	for {
 		select {
-		case msg := <-chReceiver:
+		case msg := <-rtm.IncomingEvents:
 			hal.Logger.Debug("Event Received: ")
 			switch msg.Data.(type) {
 			case slack.HelloEvent:
@@ -73,8 +66,8 @@ func (a *adapter) startConnection() {
 				m := msg.Data.(slack.TeamJoinEvent)
 				hal.Logger.Debugf("New member joined the team: %v\n", m.User)
 				// Add the new member to the user list
-				if _, err := a.Robot.Users.Get(m.User.Id); err != nil {
-					a.Robot.Users.Set(m.User.Id, hal.User{ID: m.User.Id, Name: m.User.Name})
+				if _, err := a.Robot.Users.Get(m.User.ID); err != nil {
+					a.Robot.Users.Set(m.User.ID, hal.User{ID: m.User.ID, Name: m.User.Name})
 				}
 
 			default:
@@ -85,10 +78,10 @@ func (a *adapter) startConnection() {
 }
 
 func (a *adapter) newMessage(msg *slack.MessageEvent) *hal.Message {
-	user, _ := a.Robot.Users.Get(msg.UserId)
+	user, _ := a.Robot.Users.Get(msg.Msg.User)
 	return &hal.Message{
 		User: user,
-		Room: msg.ChannelId,
+		Room: msg.Msg.Channel,
 		Text: msg.Text,
 	}
 }
