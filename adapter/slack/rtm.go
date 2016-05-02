@@ -41,12 +41,12 @@ func (a *adapter) startConnection() {
 	}
 	hal.Logger.Debugf("Stored users: %s\n", a.Robot.Users.All())
 
-	rtm := api.NewRTM()
-	go rtm.ManageConnection()
+	a.rtm = api.NewRTM()
+	go a.rtm.ManageConnection()
 
 	for {
 		select {
-		case msg := <-rtm.IncomingEvents:
+		case msg := <-a.rtm.IncomingEvents:
 			hal.Logger.Debug("Event Received: ")
 			switch msg.Data.(type) {
 			case slack.HelloEvent:
